@@ -50,6 +50,7 @@
     "scripts": {
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-html=./coverage --coverage-text",
+        "test:coverage-cobertura": "phpunit --coverage-cobertura=./coverage/cobertura.xml",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

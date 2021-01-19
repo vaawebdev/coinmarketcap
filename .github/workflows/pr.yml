@@ -1,0 +1,47 @@
+name: PR
+
+on:
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+
+    container:
+      image: kirschbaumdevelopment/laravel-test-runner:7.4
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install PCOV
+        run: apt-get install php7.4-pcov
+
+      - name: Composer Validate
+        run: composer validate
+
+      - name: Cache Composer Packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install Dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run Tests
+        run: composer run-script test:coverage-cobertura
+
+      - uses: 5monkeys/cobertura-action@master
+        with:
+          path: coverage/cobertura.xml
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          minimum_coverage: 100
+          show_class_names: true
+          only_changed_files: true
+          skip_covered: false
+          show_line: true
